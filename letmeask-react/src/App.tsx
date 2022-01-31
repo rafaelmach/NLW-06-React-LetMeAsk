@@ -1,80 +1,17 @@
-import { createContext, useState, useEffect } from "react"
 import { BrowserRouter, Route } from "react-router-dom"
-import {auth, provider, signInWithPopup, GoogleAuthProvider, onAuthStateChanged} from "./services/firebase"
-
 import { Home } from "./pages/Home"
 import { NewRoom } from "./pages/NewRoom"
-
-type User = {
-  id: string;
-  name: string;
-  avatar: string;
-}
-
-type AuthContextType = {
-  user: User | undefined
-  signInWithGoogle: () => Promise<void>
-}
-
-export const AuthContext = createContext({} as AuthContextType)
-
+import { AuthContextProvider } from "./contexts/AuthContext"
 
 const App = () => {
-  const [user, setUser] = useState<User>()
-
-  useEffect(() => {
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        const { displayName, photoURL, uid } = user
-
-        if (!displayName || !photoURL) {
-          throw new Error("Missing information from Google Account")
-        }
-  
-        setUser({
-          id: uid,
-          name: displayName,
-          avatar: photoURL
-        })
-      }
-    })
-
-  }, [])
-
-
- const signInWithGoogle = async () => {
-    const result = await signInWithPopup(auth, provider)
-
-    const credential = GoogleAuthProvider.credentialFromResult(result);
-    
-    if (result.user) {
-      const { displayName, photoURL, uid } = result.user
-
-      if (!displayName || !photoURL) {
-        throw new Error("Missing information from Google Account")
-      }
-
-      setUser({
-        id: uid,
-        name: displayName,
-        avatar: photoURL
-      })
-    }
-    console.log("RESULT USER", result.user)
-  }
-
   return (
     <BrowserRouter>
-    <AuthContext.Provider value={{ user, signInWithGoogle }}>
-
-    <Route path="/" exact component={Home} />
-    <Route path="/rooms/new" component={NewRoom} />
-
-    </AuthContext.Provider>
-    
+      <AuthContextProvider>
+        <Route path="/" exact component={Home} />
+        <Route path="/rooms/new" component={NewRoom} />
+      </AuthContextProvider>
     </BrowserRouter>
   )
-  
 }
 
 export default App
