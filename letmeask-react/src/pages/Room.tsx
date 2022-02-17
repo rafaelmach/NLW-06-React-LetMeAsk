@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react"
+import { FormEvent, useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
 
 import logoImg from "../assets/images/logo.svg"
@@ -10,6 +10,20 @@ import { database } from "../services/firebase"
 
 import "../styles/room.scss"
 
+type FirebaseQuestions = Record<
+  string,
+  {
+    author: {
+      name: string
+      avatar: string
+    }
+
+    content: string
+    isAnswered: boolean
+    isHighlighted: boolean
+  }
+>
+
 type RoomParams = {
   id: string
 }
@@ -17,9 +31,35 @@ type RoomParams = {
 export const Room = () => {
   const { user } = useAuth()
   const [newQuestion, setNewQuestion] = useState("")
+
   const params = useParams<RoomParams>()
 
   const roomId = params.id
+
+  useEffect(() => {
+    const roomRef = database.ref(`rooms/${roomId}`)
+
+    roomRef.once("value", (room) => {
+      const databaseRoom = room.val()
+      const firebaseQuestions: FirebaseQuestions = databaseRoom.questions ?? {}
+      // Outra forma de TIPAR seria ...
+      // const firebaseQuestions = databaseRoom.questions as FirebaseQuestions
+
+      const parsedQuestions = Object.entries(firebaseQuestions).map(
+        ([key, value]) => {
+          return {
+            id: key,
+            content: value.content,
+            author: value.author,
+            isHighlighted: value.isHighlighted,
+            isAnswered: value.isAnswered,
+          }
+        }
+      )
+
+      console.log(parsedQuestions)
+    })
+  }, [roomId])
 
   const handleSendQuestion = async (event: FormEvent) => {
     event.preventDefault()
@@ -69,14 +109,16 @@ export const Room = () => {
           />
 
           <div className="form-footer">
-           { user ? (
-             <div className="user-info">
+            {user ? (
+              <div className="user-info">
                 <img src={user.avatar} alt={user.name} />
                 <span>{user.name}</span>
-             </div>
-           ) : ( <span>
-            Para enviar uma pergunta, <button>faça seu login</button>.
-          </span>) }
+              </div>
+            ) : (
+              <span>
+                Para enviar uma pergunta, <button>faça seu login</button>.
+              </span>
+            )}
             <Button type="submit" disabled={!user}>
               Enviar pergunta
             </Button>
