@@ -56,7 +56,10 @@ export const AdminRoom = () => {
       <header>
         <div className="content">
           <img src={logoImg} alt="Logo da LetMeAsk" />
+          <div>
           <RoomCode code={params.id} />
+          <Button isOutlined>Encerrar sala</Button>
+          </div>
         </div>
       </header>
       <main>
@@ -65,29 +68,7 @@ export const AdminRoom = () => {
           {questions.length > 0 && <span>{questions.length} pergunta(s)</span>}
         </div>
 
-        <form onSubmit={handleSendQuestion}>
-          <textarea
-            placeholder="O que você quer perguntar?"
-            onChange={(event) => setNewQuestion(event.target.value)}
-            value={newQuestion}
-          />
-
-          <div className="form-footer">
-            {user ? (
-              <div className="user-info">
-                <img src={user.avatar} alt={user.name} />
-                <span>{user.name}</span>
-              </div>
-            ) : (
-              <span>
-                Para enviar uma pergunta, <button>faça seu login</button>.
-              </span>
-            )}
-            <Button type="submit" disabled={!user}>
-              Enviar pergunta
-            </Button>
-          </div>
-        </form>
+        
 
         <div className="question-list">
           {questions.map((question) => {
