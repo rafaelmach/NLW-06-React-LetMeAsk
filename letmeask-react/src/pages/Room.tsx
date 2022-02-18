@@ -3,12 +3,14 @@ import { useParams } from "react-router-dom"
 
 import logoImg from "../assets/images/logo.svg"
 import Button from "../components/Button"
+import { Question } from "../components/Question"
 
 import { RoomCode } from "../components/RoomCode"
 import { useAuth } from "../hooks/useAuth"
 import { database } from "../services/firebase"
 
 import "../styles/room.scss"
+import "../styles/question.scss"
 
 type FirebaseQuestions = Record<
   string,
@@ -28,9 +30,23 @@ type RoomParams = {
   id: string
 }
 
+type QuestionType = {
+  id: string
+  author: {
+    name: string
+    avatar: string
+  }
+
+  content: string
+  isAnswered: boolean
+  isHighlighted: boolean
+}
+
 export const Room = () => {
   const { user } = useAuth()
   const [newQuestion, setNewQuestion] = useState("")
+  const [questions, setQuestions] = useState<QuestionType[]>([])
+  const [title, setTitle] = useState("")
 
   const params = useParams<RoomParams>()
 
@@ -39,7 +55,7 @@ export const Room = () => {
   useEffect(() => {
     const roomRef = database.ref(`rooms/${roomId}`)
 
-    roomRef.once("value", (room) => {
+    roomRef.on("value", (room) => {
       const databaseRoom = room.val()
       const firebaseQuestions: FirebaseQuestions = databaseRoom.questions ?? {}
       // Outra forma de TIPAR seria ...
@@ -57,7 +73,8 @@ export const Room = () => {
         }
       )
 
-      console.log(parsedQuestions)
+      setTitle(databaseRoom.title)
+      setQuestions(parsedQuestions)
     })
   }, [roomId])
 
@@ -97,8 +114,8 @@ export const Room = () => {
       </header>
       <main>
         <div className="room-title">
-          <h1>Nome da Sala</h1>
-          <span>4 perguntas</span>
+          <h1>Sala {title}</h1>
+          {questions.length > 0 && <span>{questions.length} pergunta(s)</span>}
         </div>
 
         <form onSubmit={handleSendQuestion}>
@@ -124,6 +141,18 @@ export const Room = () => {
             </Button>
           </div>
         </form>
+
+        <div className="question-list">
+          {questions.map((question) => {
+            return (
+              <Question 
+              key={question.id}
+              content={question.content} 
+              author={question.author}
+              />
+            )
+          })}
+        </div>
       </main>
     </div>
   )
