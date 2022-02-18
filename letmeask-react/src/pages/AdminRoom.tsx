@@ -17,7 +17,7 @@ type RoomParams = {
   id: string
 }
 
-export const Room = () => {
+export const AdminRoom = () => {
   const { user } = useAuth()
   const [newQuestion, setNewQuestion] = useState("")
   const params = useParams<RoomParams>()
