@@ -51,13 +51,14 @@ export const Room = () => {
     setNewQuestion("")
   }
 
-  // CONTINUAR AQUI ..... 57:45
-
-  const handleLikeQuestion = async (questionId: string, hasLiked: boolean) => {
-    if (hasLiked) {
-      await database.ref(`rooms/${roomId}/questions/${questionId}/likes`).push({
-        authorId: user?.id,
-      })
+  const handleLikeQuestion = async (
+    questionId: string,
+    likeId: string | undefined
+  ) => {
+    if (likeId) {
+      await database
+        .ref(`rooms/${roomId}/questions/${questionId}/likes/${likeId}`)
+        .remove()
     } else {
       await database.ref(`rooms/${roomId}/questions/${questionId}/likes`).push({
         authorId: user?.id,
@@ -112,11 +113,11 @@ export const Room = () => {
                 author={question.author}
               >
                 <button
-                  className={`like-button ${question.hasLiked ? "liked" : ""}`}
+                  className={`like-button ${question.likeId ? "liked" : ""}`}
                   type="button"
                   aria-label="Marcar como gostei"
                   onClick={() =>
-                    handleLikeQuestion(question.id, question.hasLiked)
+                    handleLikeQuestion(question.id, question.likeId)
                   }
                 >
                   {question.likeCount > 0 && <span>{question.likeCount}</span>}
